@@ -1,0 +1,6 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+PROJECT(eigenfaces)
+INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/../eigen)
+ADD_EXECUTABLE(eigenfaces src/main.cpp  src/test.cpp)
+TARGET_LINK_LIBRARIES(eigenfaces m pthread X11)
+add_definitions(-DSOURCE_DIR="${PROJECT_SOURCE_DIR}")
