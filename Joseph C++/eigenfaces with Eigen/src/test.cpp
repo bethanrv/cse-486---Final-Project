@@ -21,30 +21,16 @@ std::vector<EigenPair> CreateEigenvectors(std::vector<Eigen::VectorXf> faceMatri
 	}
 	averageFace /= static_cast<float>(NUMB_FACES);
 	
-	//std::vector<Eigen::VectorXf> normalizedFaceVectors;
 	Eigen::MatrixXf normalizedFaceMatrix(IMAGE_SIZE2, NUMB_FACES);// = normalizedFaceMatrix.transpose() * normalizedFaceMatrix;
 	for (size_t i = 0; i < NUMB_FACES; i++) {
 		Eigen::VectorXf& faceMatrix = faceMatrixes[i];
 		normalizedFaceMatrix.col(i) = (faceMatrix-averageFace);
 	}
 	
-	//Eigen::MatrixXf normalizedFaceMatrix(IMAGE_SIZE2, NUMB_FACES);
-	//Eigen::MatrixXf& A = normalizedFaceMatrix;
 	Eigen::MatrixXf covariance = normalizedFaceMatrix.transpose() * normalizedFaceMatrix;
-	/*
-	Eigen::MatrixXf covariance(NUMB_FACES, NUMB_FACES);
-	for (size_t i = 0; i < NUMB_FACES; i++) {
-		for (size_t j = 0; i < NUMB_FACES; i++) {
-			//covariance(i,j) = normalizedFaceVectors[i].dot(normalizedFaceVectors[j]);
-			//normalizedFaceMatrix.col(0) = faceMatrixes[i]-averageFace;
-		}
-	}
-	*/
 	
 	std::cout << covariance << std::endl;
-	
-	//assert(covariance == covariance.transpose());
-	
+		
 	//Find all the eigenvectors and eigenvalues
 	Eigen::EigenSolver<Eigen::MatrixXf> solver(covariance, true);
 	std::vector<EigenPair> eigenStuff;
@@ -54,11 +40,11 @@ std::vector<EigenPair> CreateEigenvectors(std::vector<Eigen::VectorXf> faceMatri
 	//Store in pairs (so we can sort all at once)
 	for (int i=0; i<fullEigenvalues.size(); i++) {
 		Eigen::VectorXf eigenVectorOfAAt = fullEigenVectors.col(i);
-		eigenStuff.push_back(EigenPair(fullEigenvalues[i], normalizedFaceMatrix*eigenVectorOfAAt));
+		eigenStuff.push_back(EigenPair(fullEigenvalues[i], (normalizedFaceMatrix*eigenVectorOfAAt).normalized()));
 	}
 	
 	//Sort the eigenpairs by highest eigenvalues
-	std::sort(eigenStuff.begin(),eigenStuff.end(), [](EigenPair a, EigenPair b){return abs(a.first) > abs(b.first);});
+	std::sort(eigenStuff.begin(),eigenStuff.end(), [](EigenPair a, EigenPair b){return a.first > b.first;});
 	
 	//Truncate Eigenpairs.
 	eigenStuff.resize(NUMB_EIGENVECTORS);
@@ -95,7 +81,7 @@ Eigen::VectorXf TurnWeightsIntoImage(Eigen::VectorXf weights, Eigen::VectorXf Av
 Eigen::VectorXf ParseImage(std::string filename) {
 	using namespace cimg_library;
 	
-	CImg<float> image = CImg<>(filename.c_str());
+	CImg<float> image(filename.c_str());
 	image.resize(IMAGE_SIZE, IMAGE_SIZE);
 	
 	Eigen::VectorXf imageMatrix(IMAGE_SIZE2);
@@ -103,7 +89,7 @@ Eigen::VectorXf ParseImage(std::string filename) {
 	for (int i=0; i<image.width(); i++) {
 		for (int j = 0; j < image.height(); j++) {
 			//Fill the matrix with image data.
-			imageMatrix(i*IMAGE_SIZE+j) = image(static_cast<unsigned int>(i),static_cast<unsigned int>(j));
+			imageMatrix(i*IMAGE_SIZE+j) = image(static_cast<unsigned int>(i),static_cast<unsigned int>(j))/256.0f;
 		}
 	}
 	return imageMatrix;
@@ -112,13 +98,13 @@ Eigen::VectorXf ParseImage(std::string filename) {
 void SaveImage(Eigen::VectorXf faceVector, std::string filename) {
 	using namespace cimg_library;
 	
-	CImg<float> image = CImg<>(IMAGE_SIZE, IMAGE_SIZE);
+	CImg<char> image(IMAGE_SIZE, IMAGE_SIZE);
 	//image.resize(IMAGE_SIZE, IMAGE_SIZE);
 	
 	for (int i=0; i<image.width(); i++) {
 		for (int j = 0; j < image.height(); j++) {
 			//Fill the matrix with image data.
-			image(static_cast<unsigned int>(i),static_cast<unsigned int>(j)) = faceVector(i*IMAGE_SIZE+j)/256.0f;
+			image(static_cast<unsigned int>(i),static_cast<unsigned int>(j)) = static_cast<char>(std::max(std::min(faceVector(i*IMAGE_SIZE+j), 0.99f)*256.0f, 0.0f));
 		}
 	}
 	image.save(filename.c_str());
@@ -131,7 +117,7 @@ void PrintImageMatrix(Eigen::VectorXf faceVector) {
 	for (int i=0; i<IMAGE_SIZE; i++) {
 		for (int j = 0; j < IMAGE_SIZE; j++) {
 			//Fill the matrix with image data.
-			std::cout << std::setw(5) << (faceVector(i*IMAGE_SIZE+j)*256.0f) << " ";
+			std::cout << std::setw(5) << (faceVector(i*IMAGE_SIZE+j)) << " ";
 		}
 		std::cout << std::endl;
 	}

@@ -37,6 +37,9 @@ int main(int argc, char *argv[]) {
 	
 	Eigen::VectorXf averageFace;
 	std::vector<EigenPair> eigenCrap = CreateEigenvectors(vectorOfFaces, averageFace);
+	std::cout << "Average Face:" << std::endl;
+	PrintImageMatrix(averageFace);
+	
 	
 	std::cout << "Got eigen crap, size " << eigenCrap[0].second.size() << std::endl;
 	
@@ -55,7 +58,8 @@ int main(int argc, char *argv[]) {
 	
 	Eigen::VectorXf testImageReconstructed = TurnWeightsIntoImage(testWeights, averageFace, eigenCrap);
 	
-	std::cout << "Got new image, size " << testImageReconstructed.size() << " Element 0 " << testImageReconstructed[0] << std::endl;
+	std::cout << "Got new image:" << std::endl;
+	PrintImageMatrix(testImageReconstructed);
 	
 	{
 		std::stringstream saveString;
