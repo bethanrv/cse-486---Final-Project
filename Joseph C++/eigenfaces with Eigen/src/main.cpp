@@ -11,7 +11,8 @@
 
 using namespace std;
 
-static int NUMB_FACES_TO_PARSE = 9;
+static int NUMB_FACES_TO_PARSE = 10;
+static int NUMB_FACES_TO_ANALYZE = 3;
 static std::string FILENAME_APPEND = "tree_";
 
 Eigen::VectorXf loadImageI(std::string relPath, int i) {
@@ -85,9 +86,10 @@ int main(int argc, char *argv[]) {
 		SaveImage(testImageReconstructed, saveString.str());
 	}
 	
-	analyzeFace(NUMB_FACES_TO_PARSE+1, currentFaceWeights, averageFace, eigenCrap);
-	//analyzeFace(100000, currentFaceWeights, averageFace, eigenCrap);
-	//analyzeFace(100001, currentFaceWeights, averageFace, eigenCrap);
+	//analyzeFace(NUMB_FACES_TO_PARSE+1, currentFaceWeights, averageFace, eigenCrap);
+	for (int i=100000; i<100000+NUMB_FACES_TO_ANALYZE ; i++) {
+		analyzeFace(i, currentFaceWeights, averageFace, eigenCrap);
+	}
 	/*
 	float CompareFaceWeights(const Eigen::VectorXf& weights1, const Eigen::VectorXf& weights2) {
 		return (weights1-weights2).norm();
