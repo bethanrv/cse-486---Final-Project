@@ -19,7 +19,7 @@ Eigen::VectorXf loadImageI(std::string relPath, int i) {
 	return ParseImage(saveString.str());
 }
 
-void analyzeFace(int i, std::vector<Eigen::VectorXf> currentFaceWeights, Eigen::VectorXf averageFace, std::vector<EigenPair> eigenCrap) {
+void analyzeFace(int i, const VectorOfVectors& currentFaceWeights, const Eigen::VectorXf& averageFace, const VectorOfEigenPairs& eigenCrap) {
 	std::cout << "Analyzing face " << i << std::endl;
 	
 	Eigen::VectorXf unknownFace = loadImageI("/../img_align_celeba/", i);
@@ -41,7 +41,7 @@ void analyzeFace(int i, std::vector<Eigen::VectorXf> currentFaceWeights, Eigen::
 }
 
 int main(int argc, char *argv[]) {	
-	std::vector<Eigen::VectorXf> vectorOfFaces;
+	VectorOfVectors vectorOfFaces;
 	
 	for (int i=0; i<NUMB_FACES_TO_PARSE; i++) {
 		Eigen::VectorXf face = loadImageI("/../img_align_celeba/", i+1);
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	Eigen::VectorXf averageFace;
-	std::vector<EigenPair> eigenCrap = CreateEigenvectors(vectorOfFaces, averageFace);
+	VectorOfEigenPairs eigenCrap = CreateEigenvectors(vectorOfFaces, averageFace);
 	std::cout << "Average Face:" << std::endl;
 	//PrintImageMatrix(averageFace);
 	
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 	std::cout << "Got eigen crap, size " << eigenCrap[0].second.size() << std::endl;
 	
 	//Test face
-	std::vector<Eigen::VectorXf> currentFaceWeights;
+	VectorOfVectors currentFaceWeights;
 	for (int i=0; i<NUMB_FACES_TO_PARSE; i++) {
 //		std::stringstream saveString;
 //		saveString << SOURCE_DIR << "/../img_align_celeba/" << std::setfill('0') << std::setw(6) << (i) << ".jpg";
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
 	}
 	*/
 	
-	//MatchFace(Eigen::VectorXf unknownWeight, std::vector<Eigen::VectorXf> knownFaceWeights);
+	//MatchFace(Eigen::VectorXf unknownWeight, VectorOfVectors knownFaceWeights);
 	
 	return 0;
 }
