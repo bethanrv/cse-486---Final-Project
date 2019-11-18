@@ -12,17 +12,18 @@
 using namespace std;
 
 static int NUMB_FACES_TO_PARSE = 100;
+static std::string FILENAME_APPEND = "";
 
 Eigen::VectorXf loadImageI(std::string relPath, int i) {
 	std::stringstream saveString;
-	saveString << SOURCE_DIR << relPath << std::setfill('0') << std::setw(6) << i << ".jpg";
+	saveString << SOURCE_DIR << relPath << FILENAME_APPEND << std::setfill('0') << std::setw(6) << i << ".jpg";
 	return ParseImage(saveString.str());
 }
 
 void analyzeFace(int i, const VectorOfVectors& currentFaceWeights, const Eigen::VectorXf& averageFace, const VectorOfEigenPairs& eigenCrap) {
 	std::cout << "Analyzing face " << i << std::endl;
 	
-	Eigen::VectorXf unknownFace = loadImageI("/../img_align_celeba/", i);
+	Eigen::VectorXf unknownFace = loadImageI("/../begin_images/", i);
 	Eigen::VectorXf unknownFaceWeights = TurnImageIntoWeights(unknownFace, averageFace, eigenCrap);
 	Eigen::VectorXf unknownFaceReconstructed = TurnWeightsIntoImage(unknownFaceWeights, averageFace, eigenCrap);
 	
@@ -35,23 +36,23 @@ void analyzeFace(int i, const VectorOfVectors& currentFaceWeights, const Eigen::
 	std::cout << "    Face matches face: " << matchedFace << " with confidence " << matchChance << std::endl;
 	
 	std::stringstream saveString;
-	saveString << SOURCE_DIR << "/../img_test_2/" << std::setfill('0') << std::setw(6) << i << ".jpg";
+	saveString << SOURCE_DIR << "/../end_images/" << FILENAME_APPEND << std::setfill('0') << std::setw(6) << i << ".jpg";
 	SaveImage(unknownFaceReconstructed, saveString.str());
 	
 }
 
 int main(int argc, char *argv[]) {	
-	VectorOfVectors vectorOfFaces;
+	VectorOfVectors vectorOfFaces((Eigen::aligned_allocator<Eigen::VectorXf>()));
 	
 	for (int i=0; i<NUMB_FACES_TO_PARSE; i++) {
-		Eigen::VectorXf face = loadImageI("/../img_align_celeba/", i+1);
+		Eigen::VectorXf face = loadImageI("/../begin_images/", i+1);
 		vectorOfFaces.push_back(face);	
 		if (i == 1) {
 			//PrintImageMatrix(face);
 		}
 		
 		std::stringstream saveStringTest;
-		saveStringTest << SOURCE_DIR << "/../img_test/" << std::setfill('0') << std::setw(6) << (i+1) << ".jpg";
+		saveStringTest << SOURCE_DIR << "/../begin_images_shrunk/" << FILENAME_APPEND << std::setfill('0') << std::setw(6) << (i+1) << ".jpg";
 		SaveImage(face, saveStringTest.str());
 	}
 	
@@ -83,7 +84,7 @@ int main(int argc, char *argv[]) {
 	for (int i=0; i<NUMB_FACES_TO_PARSE; i++) {
 		Eigen::VectorXf testImageReconstructed = TurnWeightsIntoImage(currentFaceWeights[i], averageFace, eigenCrap);
 		std::stringstream saveString;
-		saveString << SOURCE_DIR << "/../img_test_2/" << std::setfill('0') << std::setw(6) << (i+1) << ".jpg";
+		saveString << SOURCE_DIR << "/../end_images/" << FILENAME_APPEND <<std::setfill('0') << std::setw(6) << (i+1) << ".jpg";
 		SaveImage(testImageReconstructed, saveString.str());
 	}
 	

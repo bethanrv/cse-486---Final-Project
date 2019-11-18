@@ -17,16 +17,27 @@ VectorOfEigenPairs CreateEigenvectors(const std::vector<Eigen::VectorXf, Eigen::
 	averageFace = Eigen::VectorXf(IMAGE_SIZE2);
 	for (const Eigen::VectorXf& faceMatrix : faceMatrixes) {
 		
-		for (long i=0; i<faceMatrix.size(); i++) {
-			assert(faceMatrix[i] != INFINITY);
+		for (long i=0; i<IMAGE_SIZE2; i++) {
+			averageFace[i] += faceMatrix[i];
 			if (abs(faceMatrix[i]) > 1) {
-				std::cout << "BAD VALUE IN FACE MATRIX: " << i << ":" << faceMatrix[i] << std::endl;
-				//assert(false);
+				std::cout << "BAD VALUE IN FACE MATRIX at " << i << ": " << faceMatrix[i] << std::endl;
 			}
 		}
-		averageFace += faceMatrix;
+		//averageFace += faceMatrix;
 	}
-	averageFace /= static_cast<float>(NUMB_FACES);
+	
+	for (long i=0; i<IMAGE_SIZE2; i++) {
+		assert(averageFace[i] != INFINITY);
+		if (abs(averageFace[i]) > NUMB_FACES) {
+			std::cout << "BAD VALUE IN PREDIVIDE MATRIX at " << i << ": " << averageFace[i] << std::endl;
+			//assert(false);
+		}
+	}
+	
+	for (long i=0; i<IMAGE_SIZE2; i++) {
+		averageFace[i] /= static_cast<float>(NUMB_FACES);
+	}
+	//averageFace /= static_cast<float>(NUMB_FACES);
 	
 	
 	for (long i=0; i<averageFace.size(); i++) {

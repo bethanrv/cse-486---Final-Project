@@ -1,5 +1,5 @@
 #pragma once
-//#define EIGEN_DONT_ALIGN
+#define EIGEN_DONT_ALIGN
 
 #include <vector>
 #include <set>
