@@ -26,10 +26,19 @@ std::vector<EigenPair> CreateEigenvectors(const std::vector<Eigen::VectorXf> &fa
 		normalizedFaceMatrix.col(static_cast<long>(i)) = (faceMatrix-averageFace);
 	}
 	
-	Eigen::MatrixXf covariance = normalizedFaceMatrix.transpose() * normalizedFaceMatrix;
+	
+	std::cout << "normalizedFaceMatrix: " << std::endl;
+	std::cout << normalizedFaceMatrix.row(1) << std::endl;
+	
+	Eigen::MatrixXf covariance;
+	
+	do {
+		covariance = (normalizedFaceMatrix.transpose() * normalizedFaceMatrix).eval();
+		std::cout << "Calculating covariance " << covariance(0,0) << std::endl;
+	} while (covariance(0,0) < 100000 && covariance(0,0) != INFINITY);
 	
 	std::cout << "Covariance: " << std::endl;
-	std::cout << covariance << std::endl;
+	std::cout << covariance.row(1) << std::endl;
 		
 	//Find all the eigenvectors and eigenvalues
 	Eigen::EigenSolver<Eigen::MatrixXf> solver(covariance, true);
@@ -78,6 +87,12 @@ Eigen::VectorXf TurnWeightsIntoImage(const Eigen::VectorXf& weights, const Eigen
 	return (TurnWeightsIntoImage(weights, eigenStuff)+AverageFace);
 }
 
+/**
+ * @brief CompareFaceWeights Gets the "distance" between faces.
+ * @param weights1
+ * @param weights2
+ * @return 
+ */
 float CompareFaceWeights(const Eigen::VectorXf& weights1, const Eigen::VectorXf& weights2) {
 	return (weights1-weights2).norm();
 }
@@ -85,6 +100,7 @@ float CompareFaceWeights(const Eigen::VectorXf& weights1, const Eigen::VectorXf&
 std::pair<size_t, float> MatchFace(Eigen::VectorXf unknownWeight, std::vector<Eigen::VectorXf> knownFaceWeights) {
 	float minFaceDistance = std::numeric_limits<float>::max();
 	size_t minFaceIndex = 0;
+	//Find the face with the MINIMUM distance
 	for (size_t i=0; i<knownFaceWeights.size(); i++) {
 		float faceDistance = CompareFaceWeights(unknownWeight, knownFaceWeights[i]);
 		if (faceDistance < minFaceDistance) {
