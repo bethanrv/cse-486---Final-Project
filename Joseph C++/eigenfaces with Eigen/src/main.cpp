@@ -43,15 +43,15 @@ void analyzeFace(int i, std::vector<Eigen::VectorXf> currentFaceWeights, Eigen::
 int main(int argc, char *argv[]) {	
 	std::vector<Eigen::VectorXf> vectorOfFaces;
 	
-	for (int i=1; i<NUMB_FACES_TO_PARSE; i++) {
-		Eigen::VectorXf face = loadImageI("/../img_align_celeba/", i);
+	for (int i=0; i<NUMB_FACES_TO_PARSE; i++) {
+		Eigen::VectorXf face = loadImageI("/../img_align_celeba/", i+1);
 		vectorOfFaces.push_back(face);	
 		if (i == 1) {
 			//PrintImageMatrix(face);
 		}
 		
 		std::stringstream saveStringTest;
-		saveStringTest << SOURCE_DIR << "/../img_test/" << std::setfill('0') << std::setw(6) << i << ".jpg";
+		saveStringTest << SOURCE_DIR << "/../img_test/" << std::setfill('0') << std::setw(6) << (i+1) << ".jpg";
 		SaveImage(face, saveStringTest.str());
 	}
 	
@@ -65,11 +65,11 @@ int main(int argc, char *argv[]) {
 	
 	//Test face
 	std::vector<Eigen::VectorXf> currentFaceWeights;
-	for (int i=1; i<NUMB_FACES_TO_PARSE; i++) {
+	for (int i=0; i<NUMB_FACES_TO_PARSE; i++) {
 //		std::stringstream saveString;
 //		saveString << SOURCE_DIR << "/../img_align_celeba/" << std::setfill('0') << std::setw(6) << (i) << ".jpg";
 //		testFace = ParseImage(saveString.str());
-		currentFaceWeights.push_back(TurnImageIntoWeights(vectorOfFaces[i-1], averageFace, eigenCrap));
+		currentFaceWeights.push_back(TurnImageIntoWeights(vectorOfFaces[i], averageFace, eigenCrap));
 	}
 	
 	
@@ -80,10 +80,10 @@ int main(int argc, char *argv[]) {
 	std::cout << "Got new image:" << std::endl;
 	//PrintImageMatrix(testImageReconstructed);
 	
-	for (int i=1; i<NUMB_FACES_TO_PARSE; i++) {
-		Eigen::VectorXf testImageReconstructed = TurnWeightsIntoImage(currentFaceWeights[i-1], averageFace, eigenCrap);
+	for (int i=0; i<NUMB_FACES_TO_PARSE; i++) {
+		Eigen::VectorXf testImageReconstructed = TurnWeightsIntoImage(currentFaceWeights[i], averageFace, eigenCrap);
 		std::stringstream saveString;
-		saveString << SOURCE_DIR << "/../img_test_2/" << std::setfill('0') << std::setw(6) << i << ".jpg";
+		saveString << SOURCE_DIR << "/../img_test_2/" << std::setfill('0') << std::setw(6) << (i+1) << ".jpg";
 		SaveImage(testImageReconstructed, saveString.str());
 	}
 	

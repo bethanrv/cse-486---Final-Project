@@ -35,7 +35,18 @@ std::vector<EigenPair> CreateEigenvectors(const std::vector<Eigen::VectorXf> &fa
 	do {
 		covariance = (normalizedFaceMatrix.transpose() * normalizedFaceMatrix).eval();
 		std::cout << "Calculating covariance " << covariance(0,0) << std::endl;
-	} while (covariance(0,0) < 100000 && covariance(0,0) != INFINITY);
+	} while (covariance(0,0) > 100000 || covariance(0,0) == INFINITY);
+	
+	
+	/*
+	Eigen::MatrixXf covariance(NUMB_FACES, NUMB_FACES);
+	for (size_t i = 0; i < NUMB_FACES; i++) {
+		for (size_t j = 0; i < NUMB_FACES; i++) {
+			//covariance(i,j) = normalizedFaceVectors[i].dot(normalizedFaceVectors[j]);
+			//normalizedFaceMatrix.col(0) = faceMatrixes[i]-averageFace;
+		}
+	}
+	*/
 	
 	std::cout << "Covariance: " << std::endl;
 	std::cout << covariance.row(1) << std::endl;
