@@ -11,8 +11,8 @@
 
 using namespace std;
 
-static int NUMB_FACES_TO_PARSE = 100;
-static std::string FILENAME_APPEND = "";
+static int NUMB_FACES_TO_PARSE = 9;
+static std::string FILENAME_APPEND = "tree_";
 
 Eigen::VectorXf loadImageI(std::string relPath, int i) {
 	std::stringstream saveString;
@@ -67,9 +67,6 @@ int main(int argc, char *argv[]) {
 	//Test face
 	VectorOfVectors currentFaceWeights;
 	for (int i=0; i<NUMB_FACES_TO_PARSE; i++) {
-//		std::stringstream saveString;
-//		saveString << SOURCE_DIR << "/../img_align_celeba/" << std::setfill('0') << std::setw(6) << (i) << ".jpg";
-//		testFace = ParseImage(saveString.str());
 		currentFaceWeights.push_back(TurnImageIntoWeights(vectorOfFaces[i], averageFace, eigenCrap));
 	}
 	
@@ -84,13 +81,13 @@ int main(int argc, char *argv[]) {
 	for (int i=0; i<NUMB_FACES_TO_PARSE; i++) {
 		Eigen::VectorXf testImageReconstructed = TurnWeightsIntoImage(currentFaceWeights[i], averageFace, eigenCrap);
 		std::stringstream saveString;
-		saveString << SOURCE_DIR << "/../end_images/" << FILENAME_APPEND <<std::setfill('0') << std::setw(6) << (i+1) << ".jpg";
+		saveString << SOURCE_DIR << "/../end_images/" << FILENAME_APPEND << std::setfill('0') << std::setw(6) << (i+1) << ".jpg";
 		SaveImage(testImageReconstructed, saveString.str());
 	}
 	
 	analyzeFace(NUMB_FACES_TO_PARSE+1, currentFaceWeights, averageFace, eigenCrap);
-	analyzeFace(100000, currentFaceWeights, averageFace, eigenCrap);
-	analyzeFace(100001, currentFaceWeights, averageFace, eigenCrap);
+	//analyzeFace(100000, currentFaceWeights, averageFace, eigenCrap);
+	//analyzeFace(100001, currentFaceWeights, averageFace, eigenCrap);
 	/*
 	float CompareFaceWeights(const Eigen::VectorXf& weights1, const Eigen::VectorXf& weights2) {
 		return (weights1-weights2).norm();

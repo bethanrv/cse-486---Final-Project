@@ -10,7 +10,7 @@ using namespace std;
 
 static const int IMAGE_SIZE = 100;
 static const int IMAGE_SIZE2 = IMAGE_SIZE*IMAGE_SIZE;
-static const int NUMB_EIGENVECTORS = 30;
+static const int NUMB_EIGENVECTORS = 3;
 
 
 //I got sick of writing out the whole thing, so renamed Eigenpair.
