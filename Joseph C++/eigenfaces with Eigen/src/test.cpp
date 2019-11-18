@@ -11,24 +11,24 @@ bool test() {
 	return true;
 }
 
-std::vector<EigenPair> CreateEigenvectors(std::vector<Eigen::VectorXf> faceMatrixes, Eigen::VectorXf& averageFace) {
-	std::cout << "TEST" << std::endl;
+std::vector<EigenPair> CreateEigenvectors(const std::vector<Eigen::VectorXf> &faceMatrixes, Eigen::VectorXf& averageFace) {
 	const size_t NUMB_FACES = faceMatrixes.size();
 	
 	averageFace = Eigen::VectorXf(IMAGE_SIZE2);
-	for (Eigen::VectorXf& faceMatrix : faceMatrixes) {
+	for (const Eigen::VectorXf& faceMatrix : faceMatrixes) {
 		averageFace += faceMatrix;
 	}
 	averageFace /= static_cast<float>(NUMB_FACES);
 	
 	Eigen::MatrixXf normalizedFaceMatrix(IMAGE_SIZE2, NUMB_FACES);// = normalizedFaceMatrix.transpose() * normalizedFaceMatrix;
 	for (size_t i = 0; i < NUMB_FACES; i++) {
-		Eigen::VectorXf& faceMatrix = faceMatrixes[i];
-		normalizedFaceMatrix.col(i) = (faceMatrix-averageFace);
+		const Eigen::VectorXf& faceMatrix = faceMatrixes[i];
+		normalizedFaceMatrix.col(static_cast<long>(i)) = (faceMatrix-averageFace);
 	}
 	
 	Eigen::MatrixXf covariance = normalizedFaceMatrix.transpose() * normalizedFaceMatrix;
 	
+	std::cout << "Covariance: " << std::endl;
 	std::cout << covariance << std::endl;
 		
 	//Find all the eigenvectors and eigenvalues
@@ -52,30 +52,47 @@ std::vector<EigenPair> CreateEigenvectors(std::vector<Eigen::VectorXf> faceMatri
 	return eigenStuff;
 }
 
-Eigen::VectorXf TurnImageIntoWeights(Eigen::VectorXf faceVectorMinusAverageFace, std::vector<EigenPair> eigenStuff) {
+Eigen::VectorXf TurnImageIntoWeights(const Eigen::VectorXf &faceVectorMinusAverageFace, const std::vector<EigenPair> &eigenStuff) {
 	
 	Eigen::VectorXf weights(NUMB_EIGENVECTORS);
 	for (size_t i=0; i<NUMB_EIGENVECTORS; i++) {
-		weights[i] = eigenStuff[i].second.dot(faceVectorMinusAverageFace);
+		weights[static_cast<long>(i)] = eigenStuff[i].second.dot(faceVectorMinusAverageFace);
 	}
 	return weights;
 }
 
-Eigen::VectorXf TurnImageIntoWeights(Eigen::VectorXf faceVector, Eigen::VectorXf AverageFace, std::vector<EigenPair> eigenStuff) {
+Eigen::VectorXf TurnImageIntoWeights(const Eigen::VectorXf& faceVector, const Eigen::VectorXf& AverageFace, const std::vector<EigenPair>& eigenStuff) {
 	return TurnImageIntoWeights(faceVector-AverageFace, eigenStuff);
 }
 
-Eigen::VectorXf TurnWeightsIntoImage(Eigen::VectorXf weights, std::vector<EigenPair> eigenStuff) {
+Eigen::VectorXf TurnWeightsIntoImage(const Eigen::VectorXf &weights, const std::vector<EigenPair> &eigenStuff) {
 	
 	Eigen::VectorXf image = Eigen::VectorXf::Zero(IMAGE_SIZE2);
 	for (size_t i=0; i<NUMB_EIGENVECTORS; i++) {
-		image += weights[i]*eigenStuff[i].second;
+		image += weights[static_cast<long>(i)]*eigenStuff[i].second;
 	}
 	return image;
 }
 
-Eigen::VectorXf TurnWeightsIntoImage(Eigen::VectorXf weights, Eigen::VectorXf AverageFace, std::vector<EigenPair> eigenStuff) {
+Eigen::VectorXf TurnWeightsIntoImage(const Eigen::VectorXf& weights, const Eigen::VectorXf& AverageFace, const std::vector<EigenPair>& eigenStuff) {
 	return (TurnWeightsIntoImage(weights, eigenStuff)+AverageFace);
+}
+
+float CompareFaceWeights(const Eigen::VectorXf& weights1, const Eigen::VectorXf& weights2) {
+	return (weights1-weights2).norm();
+}
+
+std::pair<size_t, float> MatchFace(Eigen::VectorXf unknownWeight, std::vector<Eigen::VectorXf> knownFaceWeights) {
+	float minFaceDistance = std::numeric_limits<float>::max();
+	size_t minFaceIndex = 0;
+	for (size_t i=0; i<knownFaceWeights.size(); i++) {
+		float faceDistance = CompareFaceWeights(unknownWeight, knownFaceWeights[i]);
+		if (faceDistance < minFaceDistance) {
+			minFaceDistance = faceDistance;
+			minFaceIndex = i;
+		}
+	}
+	return {minFaceIndex, minFaceDistance};
 }
 
 Eigen::VectorXf ParseImage(std::string filename) {
@@ -95,7 +112,7 @@ Eigen::VectorXf ParseImage(std::string filename) {
 	return imageMatrix;
 }
 
-void SaveImage(Eigen::VectorXf faceVector, std::string filename) {
+void SaveImage(const Eigen::VectorXf &faceVector, std::string filename) {
 	using namespace cimg_library;
 	
 	CImg<char> image(IMAGE_SIZE, IMAGE_SIZE);
@@ -110,7 +127,7 @@ void SaveImage(Eigen::VectorXf faceVector, std::string filename) {
 	image.save(filename.c_str());
 }
 
-void PrintImageMatrix(Eigen::VectorXf faceVector) {
+void PrintImageMatrix(const Eigen::VectorXf& faceVector) {
 	using namespace cimg_library;
 	
 	
