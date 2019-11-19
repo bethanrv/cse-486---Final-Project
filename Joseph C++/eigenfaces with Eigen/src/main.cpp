@@ -11,7 +11,7 @@
 
 using namespace std;
 
-static int NUMB_FACES_TO_PARSE = 10;
+static int NUMB_FACES_TO_PARSE = 20;
 static int NUMB_FACES_TO_ANALYZE = 3;
 static std::string FILENAME_APPEND = "tree_";
 
@@ -39,6 +39,12 @@ void analyzeFace(int i, const VectorOfVectors& currentFaceWeights, const Eigen::
 	std::stringstream saveString;
 	saveString << SOURCE_DIR << "/../end_images/" << FILENAME_APPEND << std::setfill('0') << std::setw(6) << i << ".jpg";
 	SaveImage(unknownFaceReconstructed, saveString.str());
+	
+	{
+		std::stringstream saveString;
+		saveString << SOURCE_DIR << "/../begin_images_shrunk/" << FILENAME_APPEND << std::setfill('0') << std::setw(6) << i << ".jpg";
+		SaveImage(unknownFace, saveString.str());	
+	}
 	
 }
 

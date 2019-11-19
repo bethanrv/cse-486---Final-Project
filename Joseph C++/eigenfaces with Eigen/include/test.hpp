@@ -8,9 +8,9 @@
 
 using namespace std;
 
-static const int IMAGE_SIZE = 256;
+static const int IMAGE_SIZE = 128;
 static const int IMAGE_SIZE2 = IMAGE_SIZE*IMAGE_SIZE;
-static const int NUMB_EIGENVECTORS = 5;
+static const int NUMB_EIGENVECTORS = 10;
 
 
 //I got sick of writing out the whole thing, so renamed Eigenpair.
