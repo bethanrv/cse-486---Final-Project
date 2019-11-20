@@ -19,7 +19,6 @@ VectorOfEigenPairs CreateEigenvectors(const ListOfFaces &faceMatrixes, FaceVecto
 	//Well setting it to zero would have helped!
 	std::cout << averageFace.size() << std::endl;
 	setZero(averageFace);
-	averageFace[0] = 0;
 	
 	for (const FaceVector& faceMatrix : faceMatrixes) {
 		averageFace += faceMatrix;

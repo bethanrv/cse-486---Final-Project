@@ -13,6 +13,7 @@ using namespace std;
 
 static int NUMB_FACES_TO_PARSE = 99;
 static int NUMB_FACES_TO_ANALYZE = 3;
+static int NUMB_RANDOM_FACES = 50;
 static std::string FILENAME_APPEND = "tree_";
 
 FaceVector loadImageI(std::string relPath, int i) {
@@ -105,6 +106,26 @@ int main(int argc, char *argv[]) {
 	//analyzeFace(NUMB_FACES_TO_PARSE+1, currentFaceWeights, averageFace, eigenCrap);
 	for (int i=100000; i<100000+NUMB_FACES_TO_ANALYZE ; i++) {
 		analyzeFace(i, currentFaceWeights, averageFace, eigenCrap);
+	}
+	
+	for (int i=1; i<1+NUMB_RANDOM_FACES; i++) {
+		WeightsVector randomWeights(NUMB_EIGENVECTORS);
+		for (int j=0; j<randomWeights.size(); j++) {
+			randomWeights[j] = static_cast<float>(rand()) / RAND_MAX*20-10;
+		}
+		FaceVector randomImage = TurnWeightsIntoImage(randomWeights, averageFace, eigenCrap);
+		{
+			std::stringstream saveString;
+			saveString << SOURCE_DIR << "/../generated_images/" << FILENAME_APPEND << std::setfill('0') << std::setw(6) << (i+1) << ".jpg";
+			SaveImage(randomImage, saveString.str());
+		}
+		{
+			std::stringstream saveString;
+			saveString << SOURCE_DIR << "/../generating_weights/" << FILENAME_APPEND << std::setfill('0') << std::setw(6) << i << ".txt";
+			SaveWeights(randomWeights, saveString.str());	
+		}
+		
+		//analyzeFace(i, currentFaceWeights, averageFace, eigenCrap);
 	}
 	/*
 	float CompareFaceWeights(const Eigen::VectorXf& weights1, const Eigen::VectorXf& weights2) {
