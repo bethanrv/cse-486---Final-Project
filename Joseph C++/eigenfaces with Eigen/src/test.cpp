@@ -15,60 +15,22 @@ bool test() {
 VectorOfEigenPairs CreateEigenvectors(const ListOfFaces &faceMatrixes, FaceVector& averageFace) {
 	const size_t NUMB_FACES = faceMatrixes.size();
 	
-	//averageFace = Eigen::VectorXf(IMAGE_SIZE2);
+	averageFace = Eigen::VectorXf(IMAGE_SIZE2);
 	//Well setting it to zero would have helped!
 	std::cout << averageFace.size() << std::endl;
 	setZero(averageFace);
 	averageFace[0] = 0;
 	
-	for (size_t i=0; i<IMAGE_SIZE2; i++) {
-		assert(averageFace[i] != INFINITY);
-		if (abs(averageFace[i]) > NUMB_FACES) {
-			std::cout << "BAD VALUE IN INITIAL AVERAGE MATRIX at " << i << ": " << averageFace[i] << std::endl;
-			//assert(false);
-		}
-	}
-	
 	for (const FaceVector& faceMatrix : faceMatrixes) {
-		
-		for (size_t i=0; i<IMAGE_SIZE2; i++) {
-			averageFace[i] += faceMatrix[i];
-			if (abs(faceMatrix[i]) > 1) {
-				std::cout << "BAD VALUE IN FACE MATRIX at " << i << ": " << faceMatrix[i] << std::endl;
-			}
-		}
-		//averageFace += faceMatrix;
+		averageFace += faceMatrix;
 	}
 	
-	for (size_t i=0; i<IMAGE_SIZE2; i++) {
-		assert(averageFace[i] != INFINITY);
-		if (abs(averageFace[i]) > NUMB_FACES) {
-			std::cout << "BAD VALUE IN PREDIVIDE MATRIX at " << i << ": " << averageFace[i] << std::endl;
-			//assert(false);
-		}
-	}
-	
-	for (size_t i=0; i<IMAGE_SIZE2; i++) {
-		averageFace[i] /= static_cast<float>(NUMB_FACES);
-	}
-	//averageFace /= static_cast<float>(NUMB_FACES);
-	
-	
-	for (size_t i=0; i<averageFace.size(); i++) {
-		assert(averageFace[i] != INFINITY);
-		if (abs(averageFace[i]) > 1) {
-			std::cout << "BAD VALUE IN AVERAGE MATRIX: " << i << ":" << averageFace[i] << std::endl;
-			//assert(false);
-		}
-	}
+	averageFace /= static_cast<float>(NUMB_FACES);
 	
 	Eigen::MatrixXf normalizedFaceMatrix(IMAGE_SIZE2, NUMB_FACES);
 	for (size_t i = 0; i < NUMB_FACES; i++) {
 		const FaceVector& faceMatrix = faceMatrixes[i];
-		for (int j=0; j<IMAGE_SIZE2; j++) {
-			normalizedFaceMatrix(j, static_cast<long>(i)) = faceMatrix[j]-averageFace[j];
-		}
-		//normalizedFaceMatrix.col(static_cast<long>(i)) = (faceMatrix-averageFace);
+		normalizedFaceMatrix.col(static_cast<long>(i)) = (faceMatrix-averageFace);
 	}
 	
 	
@@ -76,26 +38,18 @@ VectorOfEigenPairs CreateEigenvectors(const ListOfFaces &faceMatrixes, FaceVecto
 	std::cout << normalizedFaceMatrix.rows() << " " << normalizedFaceMatrix.cols() << " " << std::endl;
 	std::cout << normalizedFaceMatrix.row(0) << std::endl;
 	
-	for (long i=0; i<normalizedFaceMatrix.rows(); i++) {
-		for (long j=0; j<normalizedFaceMatrix.cols(); j++) {
-			assert(normalizedFaceMatrix(i, j) != INFINITY);
-			if (abs(normalizedFaceMatrix(i, j)) > 1) {
-				std::cout << "BAD VALUE: " << i << "," << j << ":" << normalizedFaceMatrix(i, j) << std::endl;
-				assert(false);
-			}
-		}
-	}
 	
 	/*
 	Eigen::MatrixXf covariance;
 	
 	do {
-		covariance = normalizedFaceMatrix.transpose() * normalizedFaceMatrix;
 		std::cout << "Calculating covariance " << covariance(0,0) << std::endl;
 	} while (covariance(0,0) > 100000 || covariance(0,0) == INFINITY);
 	*/
 	
 	Eigen::MatrixXf covariance(NUMB_FACES, NUMB_FACES);
+	covariance = normalizedFaceMatrix.transpose() * normalizedFaceMatrix;
+	/*
 	for (size_t i = 0; i < NUMB_FACES; i++) {
 		for (size_t j = 0; j < NUMB_FACES; j++) {
 			//covariance(i,j) = normalizedFaceVectors[i].dot(normalizedFaceVectors[j]);
@@ -108,6 +62,7 @@ VectorOfEigenPairs CreateEigenvectors(const ListOfFaces &faceMatrixes, FaceVecto
 			//covariance(i,j) = normalizedFaceMatrix.col(i).dot(normalizedFaceMatrix.col(j));
 		}
 	}
+	*/
 	
 	std::cout << "Covariance: " << std::endl;
 	std::cout << covariance << std::endl;
@@ -134,30 +89,29 @@ VectorOfEigenPairs CreateEigenvectors(const ListOfFaces &faceMatrixes, FaceVecto
 }
 
 WeightsVector TurnImageIntoWeights(const FaceVector &faceVectorMinusAverageFace, const VectorOfEigenPairs &eigenStuff) {
-	
-	Eigen::VectorXf weights(NUMB_EIGENVECTORS);
+	WeightsVector weights(NUMB_EIGENVECTORS);
 	for (size_t i=0; i<NUMB_EIGENVECTORS; i++) {
-		weights[static_cast<long>(i)] = dot(eigenStuff[i].second,faceVectorMinusAverageFace);
+		weights[static_cast<long>(i)] = eigenStuff[i].second.dot(faceVectorMinusAverageFace);
 	}
 	return weights;
 }
 
 WeightsVector TurnImageIntoWeights(const FaceVector &faceVector, const FaceVector &AverageFace, const VectorOfEigenPairs& eigenStuff) {
-	return TurnImageIntoWeights(subtract(faceVector, AverageFace), eigenStuff);
+	return TurnImageIntoWeights((faceVector - AverageFace), eigenStuff);
 }
 
 FaceVector TurnWeightsIntoImage(const WeightsVector &weights, const VectorOfEigenPairs &eigenStuff) {
 	
-	FaceVector image;// = Eigen::VectorXf::Zero(IMAGE_SIZE2);
+	FaceVector image = Eigen::VectorXf::Zero(IMAGE_SIZE2);
 	setZero(image);
 	for (size_t i=0; i<NUMB_EIGENVECTORS; i++) {
-		addInPlace(image, weights[static_cast<long>(i)]*eigenStuff[i].second);
+		image += weights[static_cast<long>(i)]*eigenStuff[i].second;
 	}
 	return image;
 }
 
 FaceVector TurnWeightsIntoImage(const WeightsVector &weights, const FaceVector &AverageFace, const VectorOfEigenPairs& eigenStuff) {
-	return add(TurnWeightsIntoImage(weights, eigenStuff), AverageFace);
+	return (TurnWeightsIntoImage(weights, eigenStuff) + AverageFace);
 }
 
 std::pair<size_t, float> MatchFace(const WeightsVector &unknownWeight, const ListOfWeights &knownFaceWeights) {
@@ -180,7 +134,7 @@ FaceVector ParseImage(std::string filename) {
 	CImg<float> image(filename.c_str());
 	image.resize(IMAGE_SIZE, IMAGE_SIZE);
 	
-	FaceVector imageMatrix;	//(IMAGE_SIZE2);
+	FaceVector imageMatrix(IMAGE_SIZE2);
 	
 	for (size_t i=0; i<image.width(); i++) {
 		for (size_t j=0; j < image.height(); j++) {
@@ -195,7 +149,6 @@ void SaveImage(const FaceVector &faceVector, std::string filename) {
 	using namespace cimg_library;
 	
 	CImg<char> image(IMAGE_SIZE, IMAGE_SIZE);
-	//image.resize(IMAGE_SIZE, IMAGE_SIZE);
 	
 	for (int i=0; i<image.width(); i++) {
 		for (int j = 0; j < image.height(); j++) {

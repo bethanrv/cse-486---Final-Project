@@ -18,55 +18,17 @@ static const int NUMB_EIGENVECTORS = 20;
 typedef	std::pair<float, Eigen::VectorXf> EigenPair;
 typedef std::vector<EigenPair, Eigen::aligned_allocator<EigenPair>> VectorOfEigenPairs;
 //typedef Eigen::VectorXf FaceVector;
-typedef std::array<float, IMAGE_SIZE2> FaceVector;
+typedef Eigen::VectorXf FaceVector;
 typedef Eigen::VectorXf WeightsVector;
 typedef std::vector<FaceVector, Eigen::aligned_allocator<FaceVector>> ListOfFaces;
 typedef std::vector<WeightsVector, Eigen::aligned_allocator<WeightsVector>> ListOfWeights;
 
 bool test();
 
-template<typename T, typename U>
-float dot(const T& thing1, const U& thing2) {
-	float sum;
-	assert(thing1.size() == thing2.size());
-	for (int i=0; i<thing1.size(); i++) {
-		sum += thing1[i]*thing2[i];
-	}
-	return sum;
-}
-
 template<typename T>
 void setZero(T& thing1) {
 	for (size_t i=0; i<thing1.size(); i++) {
 		thing1[i] = 0.0f;
-	}
-}
-
-template<typename T>
-T subtract(const T& thing1, const T& thing2) {
-	T sum;
-	assert(thing1.size() == thing2.size());
-	for (int i=0; i<thing1.size(); i++) {
-		sum[i] = thing1[i]-thing2[i];
-	}
-	return sum;
-}
-
-template<typename T>
-T add(const T& thing1, const T& thing2) {
-	T sum;
-	assert(thing1.size() == thing2.size());
-	for (int i=0; i<thing1.size(); i++) {
-		sum[i] = thing1[i]+thing2[i];
-	}
-	return sum;
-}
-
-template<typename T, typename U>
-void addInPlace(T& thing1, const U& thing2) {
-	assert(thing1.size() == thing2.size());
-	for (int i=0; i<thing1.size(); i++) {
-		thing1[i] = thing1[i] + thing2[i];
 	}
 }
 
@@ -96,7 +58,7 @@ float CompareFaceWeights(const T &weights1, const T &weights2) {
 	for (int i=0; i<weights1.size(); i++) {
 		compare += pow(weights1[i]-weights2[i],2);
 	}
-	return compare;
+	return sqrt(compare);
 }
 
 std::pair<size_t, float> MatchFace(const WeightsVector& unknownWeight, const ListOfWeights& knownFaceWeights);
