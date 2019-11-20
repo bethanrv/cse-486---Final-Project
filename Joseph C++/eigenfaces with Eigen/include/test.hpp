@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <set>
+#include <array>
 #include "Eigen/Dense"
 #include <Eigen/StdVector>
 
@@ -10,32 +11,100 @@ using namespace std;
 
 static const int IMAGE_SIZE = 128;
 static const int IMAGE_SIZE2 = IMAGE_SIZE*IMAGE_SIZE;
-static const int NUMB_EIGENVECTORS = 10;
+static const int NUMB_EIGENVECTORS = 20;
 
 
 //I got sick of writing out the whole thing, so renamed Eigenpair.
 typedef	std::pair<float, Eigen::VectorXf> EigenPair;
-typedef std::vector<Eigen::VectorXf, Eigen::aligned_allocator<Eigen::VectorXf>> VectorOfVectors;
 typedef std::vector<EigenPair, Eigen::aligned_allocator<EigenPair>> VectorOfEigenPairs;
+//typedef Eigen::VectorXf FaceVector;
+typedef std::array<float, IMAGE_SIZE2> FaceVector;
+typedef Eigen::VectorXf WeightsVector;
+typedef std::vector<FaceVector, Eigen::aligned_allocator<FaceVector>> ListOfFaces;
+typedef std::vector<WeightsVector, Eigen::aligned_allocator<WeightsVector>> ListOfWeights;
 
 bool test();
 
-VectorOfEigenPairs CreateEigenvectors(const VectorOfVectors &faceMatrixes, Eigen::VectorXf& averageFace);
+template<typename T, typename U>
+float dot(const T& thing1, const U& thing2) {
+	float sum;
+	assert(thing1.size() == thing2.size());
+	for (int i=0; i<thing1.size(); i++) {
+		sum += thing1[i]*thing2[i];
+	}
+	return sum;
+}
 
-Eigen::VectorXf TurnImageIntoWeights(const Eigen::VectorXf& faceVectorMinusAverageFace, const VectorOfEigenPairs& eigenStuff);
+template<typename T>
+void setZero(T& thing1) {
+	for (size_t i=0; i<thing1.size(); i++) {
+		thing1[i] = 0.0f;
+	}
+}
 
-Eigen::VectorXf TurnImageIntoWeights(const Eigen::VectorXf& faceVector, const Eigen::VectorXf& AverageFace, const VectorOfEigenPairs& eigenStuff);
+template<typename T>
+T subtract(const T& thing1, const T& thing2) {
+	T sum;
+	assert(thing1.size() == thing2.size());
+	for (int i=0; i<thing1.size(); i++) {
+		sum[i] = thing1[i]-thing2[i];
+	}
+	return sum;
+}
 
-Eigen::VectorXf TurnWeightsIntoImage(const Eigen::VectorXf& weights, const VectorOfEigenPairs& eigenStuff);
+template<typename T>
+T add(const T& thing1, const T& thing2) {
+	T sum;
+	assert(thing1.size() == thing2.size());
+	for (int i=0; i<thing1.size(); i++) {
+		sum[i] = thing1[i]+thing2[i];
+	}
+	return sum;
+}
 
-Eigen::VectorXf TurnWeightsIntoImage(const Eigen::VectorXf &weights, const Eigen::VectorXf &AverageFace, const VectorOfEigenPairs &eigenStuff);
+template<typename T, typename U>
+void addInPlace(T& thing1, const U& thing2) {
+	assert(thing1.size() == thing2.size());
+	for (int i=0; i<thing1.size(); i++) {
+		thing1[i] = thing1[i] + thing2[i];
+	}
+}
 
-Eigen::VectorXf ParseImage(std::string filename);
+VectorOfEigenPairs CreateEigenvectors(const ListOfFaces &faceMatrixes, FaceVector& averageFace);
 
-float CompareFaceWeights(const Eigen::VectorXf& weights1, const Eigen::VectorXf& weights2);
+WeightsVector TurnImageIntoWeights(const FaceVector& faceVectorMinusAverageFace, const VectorOfEigenPairs& eigenStuff);
 
-std::pair<size_t, float> MatchFace(const Eigen::VectorXf& unknownWeight, const VectorOfVectors& knownFaceWeights);
+WeightsVector TurnImageIntoWeights(const FaceVector& faceVector, const FaceVector& AverageFace, const VectorOfEigenPairs& eigenStuff);
 
-void SaveImage(const Eigen::VectorXf& faceVector, std::string filename);
+FaceVector TurnWeightsIntoImage(const WeightsVector& weights, const VectorOfEigenPairs& eigenStuff);
 
-void PrintImageMatrix(const Eigen::VectorXf& faceVector);
+FaceVector TurnWeightsIntoImage(const WeightsVector &weights, const FaceVector &AverageFace, const VectorOfEigenPairs &eigenStuff);
+
+FaceVector ParseImage(std::string filename);
+
+
+/**
+ * @brief CompareFaceWeights Gets the "distance" between faces.
+ * @param weights1
+ * @param weights2
+ * @return 
+ */
+template<typename T>
+float CompareFaceWeights(const T &weights1, const T &weights2) {
+	float compare = 0;
+	assert(weights1.size() == weights2.size());
+	for (int i=0; i<weights1.size(); i++) {
+		compare += pow(weights1[i]-weights2[i],2);
+	}
+	return compare;
+}
+
+std::pair<size_t, float> MatchFace(const WeightsVector& unknownWeight, const ListOfWeights& knownFaceWeights);
+
+void SaveImage(const FaceVector& faceVector, std::string filename);
+
+void PrintImageMatrix(const FaceVector& faceVector);
+
+void SaveWeights(const WeightsVector& weightsVector, std::string filename);
+
+WeightsVector LoadWeights(std::string filename);

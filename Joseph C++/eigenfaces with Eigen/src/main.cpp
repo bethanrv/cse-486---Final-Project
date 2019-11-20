@@ -11,22 +11,22 @@
 
 using namespace std;
 
-static int NUMB_FACES_TO_PARSE = 20;
+static int NUMB_FACES_TO_PARSE = 99;
 static int NUMB_FACES_TO_ANALYZE = 3;
 static std::string FILENAME_APPEND = "tree_";
 
-Eigen::VectorXf loadImageI(std::string relPath, int i) {
+FaceVector loadImageI(std::string relPath, int i) {
 	std::stringstream saveString;
 	saveString << SOURCE_DIR << relPath << FILENAME_APPEND << std::setfill('0') << std::setw(6) << i << ".jpg";
 	return ParseImage(saveString.str());
 }
 
-void analyzeFace(int i, const VectorOfVectors& currentFaceWeights, const Eigen::VectorXf& averageFace, const VectorOfEigenPairs& eigenCrap) {
+void analyzeFace(int i, const ListOfWeights& currentFaceWeights, const FaceVector& averageFace, const VectorOfEigenPairs& eigenCrap) {
 	std::cout << "Analyzing face " << i << std::endl;
 	
-	Eigen::VectorXf unknownFace = loadImageI("/../begin_images/", i);
-	Eigen::VectorXf unknownFaceWeights = TurnImageIntoWeights(unknownFace, averageFace, eigenCrap);
-	Eigen::VectorXf unknownFaceReconstructed = TurnWeightsIntoImage(unknownFaceWeights, averageFace, eigenCrap);
+	FaceVector unknownFace = loadImageI("/../begin_images/", i);
+	WeightsVector unknownFaceWeights = TurnImageIntoWeights(unknownFace, averageFace, eigenCrap);
+	FaceVector unknownFaceReconstructed = TurnWeightsIntoImage(unknownFaceWeights, averageFace, eigenCrap);
 	
 	float chanceItsAFace = CompareFaceWeights(unknownFace, unknownFaceReconstructed);
 	std::cout << "    Chance the mystery face is a face: " << chanceItsAFace << std::endl;
@@ -46,24 +46,27 @@ void analyzeFace(int i, const VectorOfVectors& currentFaceWeights, const Eigen::
 		SaveImage(unknownFace, saveString.str());	
 	}
 	
+	{
+		std::stringstream saveString;
+		saveString << SOURCE_DIR << "/../weights/" << FILENAME_APPEND << std::setfill('0') << std::setw(6) << i << ".txt";
+		SaveWeights(unknownFaceWeights, saveString.str());	
+	}
+	
 }
 
 int main(int argc, char *argv[]) {	
-	VectorOfVectors vectorOfFaces((Eigen::aligned_allocator<Eigen::VectorXf>()));
+	ListOfFaces vectorOfFaces((Eigen::aligned_allocator<Eigen::VectorXf>()));
 	
 	for (int i=0; i<NUMB_FACES_TO_PARSE; i++) {
-		Eigen::VectorXf face = loadImageI("/../begin_images/", i+1);
-		vectorOfFaces.push_back(face);	
-		if (i == 1) {
-			//PrintImageMatrix(face);
-		}
+		FaceVector face = loadImageI("/../begin_images/", i+1);
+		vectorOfFaces.push_back(face);
 		
 		std::stringstream saveStringTest;
 		saveStringTest << SOURCE_DIR << "/../begin_images_shrunk/" << FILENAME_APPEND << std::setfill('0') << std::setw(6) << (i+1) << ".jpg";
 		SaveImage(face, saveStringTest.str());
 	}
 	
-	Eigen::VectorXf averageFace;
+	FaceVector averageFace;
 	VectorOfEigenPairs eigenCrap = CreateEigenvectors(vectorOfFaces, averageFace);
 	std::cout << "Average Face:" << std::endl;
 	//PrintImageMatrix(averageFace);
@@ -72,7 +75,7 @@ int main(int argc, char *argv[]) {
 	std::cout << "Got eigen crap, size " << eigenCrap[0].second.size() << std::endl;
 	
 	//Test face
-	VectorOfVectors currentFaceWeights;
+	ListOfWeights currentFaceWeights;
 	for (int i=0; i<NUMB_FACES_TO_PARSE; i++) {
 		currentFaceWeights.push_back(TurnImageIntoWeights(vectorOfFaces[i], averageFace, eigenCrap));
 	}
@@ -86,10 +89,17 @@ int main(int argc, char *argv[]) {
 	//PrintImageMatrix(testImageReconstructed);
 	
 	for (int i=0; i<NUMB_FACES_TO_PARSE; i++) {
-		Eigen::VectorXf testImageReconstructed = TurnWeightsIntoImage(currentFaceWeights[i], averageFace, eigenCrap);
-		std::stringstream saveString;
-		saveString << SOURCE_DIR << "/../end_images/" << FILENAME_APPEND << std::setfill('0') << std::setw(6) << (i+1) << ".jpg";
-		SaveImage(testImageReconstructed, saveString.str());
+		FaceVector testImageReconstructed = TurnWeightsIntoImage(currentFaceWeights[i], averageFace, eigenCrap);
+		{
+			std::stringstream saveString;
+			saveString << SOURCE_DIR << "/../end_images/" << FILENAME_APPEND << std::setfill('0') << std::setw(6) << (i+1) << ".jpg";
+			SaveImage(testImageReconstructed, saveString.str());
+		}
+		{
+			std::stringstream saveString;
+			saveString << SOURCE_DIR << "/../weights/" << FILENAME_APPEND << std::setfill('0') << std::setw(6) << i << ".txt";
+			SaveWeights(currentFaceWeights[static_cast<unsigned long>(i)], saveString.str());	
+		}
 	}
 	
 	//analyzeFace(NUMB_FACES_TO_PARSE+1, currentFaceWeights, averageFace, eigenCrap);
