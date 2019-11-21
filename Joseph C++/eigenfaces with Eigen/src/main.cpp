@@ -14,7 +14,7 @@ using namespace std;
 
 //TREE DATASET
 static int NUMB_FACES_TO_PARSE = 99;
-static int NUMB_FACES_TO_ANALYZE = 5;
+static int NUMB_FACES_TO_ANALYZE = 10;
 static std::string FILENAME_APPEND = "tree_";
 
 
