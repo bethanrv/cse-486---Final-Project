@@ -14,7 +14,10 @@ static const int IMAGE_SIZE2 = IMAGE_SIZE*IMAGE_SIZE;
 //40 for faces
 //static const int NUMB_EIGENVECTORS = 40;
 //10 for trees
-static const int NUMB_EIGENVECTORS = 10;
+//static const int NUMB_EIGENVECTORS = 10;
+//3 for signs
+static const int NUMB_EIGENVECTORS = 3;
+
 
 
 //I got sick of writing out the whole thing, so renamed Eigenpair.

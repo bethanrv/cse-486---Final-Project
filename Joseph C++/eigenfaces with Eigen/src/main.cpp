@@ -13,10 +13,16 @@ using namespace std;
 
 
 //TREE DATASET
+static int NUMB_FACES_TO_PARSE = 17;
+static int NUMB_FACES_TO_ANALYZE = 4;
+static std::string FILENAME_APPEND = "sign_";
+
+/*
+//TREE DATASET
 static int NUMB_FACES_TO_PARSE = 99;
 static int NUMB_FACES_TO_ANALYZE = 10;
 static std::string FILENAME_APPEND = "tree_";
-
+*/
 
 /*
 //FACE DATASET
